@@ -1,10 +1,3 @@
-/*module.exports = {
-  ...(typeof createLoginTracker !== 'undefined' && { createLoginTracker })
-};
-
-console.log('my name is denis');
-*/
-
 function createLoginTracker(userInfo) {
     // Ensure userInfo is an object and has the required properties
     if (typeof userInfo !== 'object' || !userInfo.username || !userInfo.password) {
@@ -17,34 +10,26 @@ function createLoginTracker(userInfo) {
 
     // Define the inner arrow function for handling login attempts
     const handleLoginAttempt = (passwordAttempt) => {
-        // Check if the account is already locked
-        if (attemptCount >= maxAttempts) {
-            return 'Account is locked due to too many failed attempts.';
-        }
-
-        // Increment attemptCount on each login attempt
-        attemptCount++;
-
         // Check if the provided password matches the user's password
         if (passwordAttempt === userInfo.password) {
-            return 'Login successful!';
+            // Reset attemptCount on successful login
+            attemptCount = 0;
+            return 'Login successful';
+        }
+
+        // Increment attemptCount on each failed login attempt
+        attemptCount++;
+
+        // Check if attemptCount exceeds maxAttempts
+        if (attemptCount > maxAttempts) {
+            return 'Account locked due to too many failed login attempts';
         } else {
-            if (attemptCount >= maxAttempts) {
-                return 'Login failed. Account is now locked due to too many failed attempts.';
-            }
-            return 'Login failed. Incorrect password.';
+            return `Attempt ${attemptCount}: Login failed`;
         }
     };
 
-    // Initialize login feature logic here
-    console.log(`Initializing login for user: ${userInfo.username}`);
-
-    // Return an object with the login handler
-    return {
-        username: userInfo.username,
-        loggedIn: false,
-        attemptLogin: handleLoginAttempt
-    };
+    // Return the login handler function
+    return handleLoginAttempt;
 }
 
 // Example usage:
@@ -53,8 +38,9 @@ const userInfo = {
     password: "password123"
 };
 
-const loginTracker = createLoginTracker(userInfo);
-console.log(loginTracker.attemptLogin("wrongPassword")); // "Login failed. Incorrect password."
-console.log(loginTracker.attemptLogin("wrongPassword")); // "Login failed. Incorrect password."
-console.log(loginTracker.attemptLogin("wrongPassword")); // "Login failed. Account is now locked due to too many failed attempts."
-console.log(loginTracker.attemptLogin("password123"));
+const loginAttempt = createLoginTracker(userInfo);
+console.log(loginAttempt("wrongPassword")); // "Attempt 1: Login failed"
+console.log(loginAttempt("wrongPassword")); // "Attempt 2: Login failed"
+console.log(loginAttempt("wrongPassword")); // "Attempt 3: Login failed"
+console.log(loginAttempt("password123"));   // "Account locked due to too many failed login attempts"
+console.log(loginAttempt("password123"));   // "Account locked due to too many failed login attempts"
